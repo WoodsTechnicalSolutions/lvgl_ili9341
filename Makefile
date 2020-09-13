@@ -1,11 +1,11 @@
 #
 # Makefile
 #
-CC ?= /src/etinker/toolchain/arm-cortexa9-linux-gnueabihf/bin/arm-cortexa9-linux-gnueabihf-gcc --sysroot=/src/etinker/rootfs/build/zynq-xlnx/arm-cortexa9-linux-gnueabihf/staging
+CC ?= gcc
 LVGL_DIR ?= $(shell pwd)
 LVGL_DIR_NAME ?= lvgl
 CFLAGS ?= -Wall -Wshadow -Wundef -Wmaybe-uninitialized -O3 -g0 -I$(LVGL_DIR)/
-LDFLAGS ?= -lrt -lgpiod
+LDFLAGS ?= -lrt -lpthread -lgpiod
 BIN = ili9341
 
 

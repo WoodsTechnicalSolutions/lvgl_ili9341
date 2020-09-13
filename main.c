@@ -1,5 +1,9 @@
 #include <unistd.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <sys/time.h>
+#include <pthread.h>
 
 #include "lvgl/lvgl.h"
 // New ILI9341 lvgl driver
@@ -14,9 +18,25 @@ static lv_disp_buf_t disp_buf;
 static lv_disp_drv_t disp_drv;
 
 static lv_obj_t *background = NULL;
+static lv_obj_t *status = NULL;
+
+static pthread_t tick_thread;
+
+void *tick_timer(void *arg)
+ {
+	while (true) {
+		usleep(10000);
+		lv_tick_inc(10);
+	}
+
+	pthread_exit(NULL);
+ }
 
 int main(int argc, char* argv[])
 {
+	uint8_t count = 0;
+	time_t t = time(NULL);
+
 	// LVGL Setup
 	lv_init();
 
@@ -34,17 +54,33 @@ int main(int argc, char* argv[])
 	disp_drv.flush_cb = ili9341_flush;
 	lv_disp_drv_register(&disp_drv);
 
-	// Draw something on the screen
+	// Set background text on the screen
 	background = lv_label_create(lv_scr_act(), NULL);
 	lv_label_set_text(background, "Light and Versatile Graphics Library");
 	lv_obj_align(background, NULL, LV_ALIGN_CENTER, 0, 0);
+
+	// Set status (time) text on the screen
+	status = lv_label_create(lv_scr_act(), NULL);
+	lv_label_set_text(status, asctime(localtime(&t)));
+	lv_obj_align(status, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
+
+	if (pthread_create(&tick_thread, NULL, tick_timer, NULL) == -1) {
+		fprintf(stderr, "error pthread_create - tick_timer\n");
+		return -1;
+	}
 
 	// LED Backlight ON
 	io_led(1);
 
 	while(1) {
+		if (++count == 10) {
+			count = 0;
+			t = time(NULL);
+			lv_obj_clean(status);
+			lv_label_set_text(status, asctime(localtime(&t)));
+		}
 		lv_task_handler();
-		usleep(10000);
+		usleep(100000);
 	}
 
 	return 0;
