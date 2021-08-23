@@ -1,15 +1,18 @@
 #
 # Makefile
 #
+
+-include user.mk
+
 CC ?= gcc
 LVGL_DIR ?= $(shell pwd)
 LVGL_DIR_NAME ?= lvgl
-CFLAGS ?= -Wall -Wshadow -Wundef -Wmaybe-uninitialized -O3 -g0 -I$(LVGL_DIR)/
-LDFLAGS ?= -lrt -lpthread -lgpiod
+CFLAGS ?= -Wall -Wshadow -Wundef -Wmaybe-uninitialized -O3 -g0 -I$(LVGL_DIR)/ $(LDFLAGS_USER)
+LDFLAGS ?= -lrt -lpthread -lgpiod $(LDFLAGS_USER)
 BIN = ili9341
 
+# Collect the files to compile
 
-#Collect the files to compile
 MAINSRC = ./main.c ./io.c
 
 include $(LVGL_DIR)/lvgl/lvgl.mk
@@ -30,13 +33,13 @@ OBJS = $(AOBJS) $(COBJS) $(MAINOBJ)
 all: default
 
 %.o: %.c
-	@$(CC)  $(CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "CC $<"
     
 default: $(BIN)
 $(BIN): $(OBJS)
-	$(CC) -o $(BIN) $(OBJS) $(LDFLAGS)
+	@$(CC) -o $(BIN) $(OBJS) $(LDFLAGS)
+	@echo "CC -o $@"
 
 clean: 
 	rm -f $(BIN) $(OBJS)
-

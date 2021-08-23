@@ -1,6 +1,6 @@
 /**
  * @file lv_drv_conf.h
- * Configuration file for v7.4.0
+ * Configuration file for v8.1.0-dev
  */
 
 /*
@@ -87,14 +87,14 @@
 #endif
 
 #if USE_MONITOR
-#  define MONITOR_HOR_RES     LV_HOR_RES
-#  define MONITOR_VER_RES     LV_VER_RES
+#  define MONITOR_HOR_RES     480
+#  define MONITOR_VER_RES     320
 
 /* Scale window by this factor (useful when simulating small screens) */
 #  define MONITOR_ZOOM        1
 
 /* Used to test true double buffering with only address changing.
- * Set LV_VDB_SIZE = (LV_HOR_RES * LV_VER_RES) and  LV_VDB_DOUBLE = 1 and LV_COLOR_DEPTH = 32" */
+ * Use 2 draw buffers, bith with MONITOR_HOR_RES x MONITOR_VER_RES size*/
 #  define MONITOR_DOUBLE_BUFFERED 0
 
 /*Eclipse: <SDL2/SDL.h>    Visual Studio: <SDL.h>*/
@@ -116,11 +116,36 @@
 #  define WINDOW_VER_RES      320
 #endif
 
+/*----------------------------
+ *  Native Windows (win32drv)
+ *---------------------------*/
+#ifndef USE_WIN32DRV
+#  define USE_WIN32DRV       0
+#endif
+
+#if USE_WIN32DRV
+/* Scale window by this factor (useful when simulating small screens) */
+#  define WIN32DRV_MONITOR_ZOOM        1
+#endif
+
 /*----------------------------------------
  *  GTK drivers (monitor, mouse, keyboard
  *---------------------------------------*/
 #ifndef USE_GTK
 #  define USE_GTK       0
+#endif
+
+/*----------------------------------------
+ *  Wayland drivers (monitor, mouse, keyboard, touchscreen)
+ *---------------------------------------*/
+#ifndef USE_WAYLAND
+#  define USE_WAYLAND       0
+#endif
+
+#if USE_WAYLAND
+#  define WAYLAND_HOR_RES      480
+#  define WAYLAND_VER_RES      320
+#  define WAYLAND_SURF_TITLE   "LVGL"
 #endif
 
 /*----------------
@@ -181,6 +206,17 @@
 #if USE_ST7565
 /*No settings*/
 #endif  /*USE_ST7565*/
+
+/*------------------------------
+ *  GC9A01 (color, low res.)
+ *-----------------------------*/
+#ifndef USE_GC9A01
+#  define USE_GC9A01          0
+#endif
+
+#if USE_GC9A01
+/*No settings*/
+#endif  /*USE_GC9A01*/
 
 /*------------------------------------------
  *  UC1610 (4 gray 160*[104|128])
@@ -252,6 +288,18 @@
 
 #if USE_BSD_FBDEV
 # define FBDEV_PATH		"/dev/fb0"
+#endif
+
+/*-----------------------------------------
+ *  DRM/KMS device (/dev/dri/cardX)
+ *-----------------------------------------*/
+#ifndef USE_DRM
+#  define USE_DRM           0
+#endif
+
+#if USE_DRM
+#  define DRM_CARD          "/dev/dri/card0"
+#  define DRM_CONNECTOR_ID  -1	/* -1 for the first connected one */
 #endif
 
 /*********************
