@@ -19,6 +19,10 @@
 
 #include <stdint.h>
 
+#define USE_ILI9341 1
+
+#define USE_EVDEV 1
+
 /* Maximal horizontal and vertical resolution to support by the library.*/
 #define LV_HOR_RES_MAX          (320)
 #define LV_VER_RES_MAX          (240)
@@ -527,7 +531,7 @@ e.g. "stm32f769xx.h" or "stm32f429xx.h"*/
 *==================*/
 
 /*Enable the examples to be built with the library*/
-#define LV_BUILD_EXAMPLES   1
+#define LV_BUILD_EXAMPLES   0
 
 /*--END OF LV_CONF_H--*/
 
