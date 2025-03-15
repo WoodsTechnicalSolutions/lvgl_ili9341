@@ -1,3 +1,18 @@
+/*
+ * Minimal ili9341 LCD panel program using LVGL
+ *
+ * https://lvgl.io/
+ * https://github.com/lvgl/lvgl
+ * https://github.com/lvgl/lv_drivers
+ * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/spi/spidev_test.c
+ * https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git
+ *
+ * Copyright (C) 2020-2025, Derald D. Woods <woods.technical@gmail.com>
+ *
+ * This file is made available under the terms of the GNU General Public
+ * License version 3.
+ */
+
 #include <unistd.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -77,7 +92,10 @@ int main(int argc, char* argv[])
 	ili9341_rotate(90, ILI9341_BGR);
 
 	// Touchscreen
-	evdev_init();
+	if (!evdev_set_file(EVDEV_NAME)) {
+		io_uninit();
+		return -1;
+	}
 
 	// LVGL Display Setup (Physical LCD)
 	lv_disp_draw_buf_init(&draw_buf, buf, NULL, DISP_BUF_SIZE);

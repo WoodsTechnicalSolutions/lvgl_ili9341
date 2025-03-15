@@ -1,3 +1,12 @@
+/*
+ * io.h - SPI and GPIO I/O routine declarations
+ *
+ * Copyright (C) 2020-2025, Derald D. Woods <woods.technical@gmail.com>
+ *
+ * This file is made available under the terms of the GNU General Public
+ * License version 3.
+ */
+
 #ifndef IO_H
 #define IO_H
 

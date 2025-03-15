@@ -1,3 +1,5 @@
 *.o
 /ili9341
 /user.mk
+/lvgl
+/lv_drivers
