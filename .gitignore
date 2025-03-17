@@ -1,5 +1,5 @@
 *.o
-/ili9341
+/build
 /user.mk
 /lvgl
 /lv_drivers

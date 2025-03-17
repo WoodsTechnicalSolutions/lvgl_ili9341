@@ -29,32 +29,38 @@ BIN = ili9341
 
 # Collect the files to compile
 
-MAINSRC = ./main.c ./io.c
-
 OBJEXT ?= .o
 
-AOBJS = $(ASRCS:.S=$(OBJEXT))
-COBJS = $(CSRCS:.c=$(OBJEXT))
+BUILD_DIR := build
 
-MAINOBJ = $(MAINSRC:.c=$(OBJEXT))
+lvcsrc := $(subst $(CURDIR)/,,$(CSRCS))
+CSRCS := $(lvcsrc)
+lvasrc := $(subst $(CURDIR)/,,$(ASRCS))
+ASRCS := $(lvasrc)
+AOBJS := $(ASRCS:%.S=$(BUILD_DIR)/%$(OBJEXT))
+COBJS := $(CSRCS:%.c=$(BUILD_DIR)/%$(OBJEXT))
 
-SRCS = $(ASRCS) $(CSRCS) $(MAINSRC)
-OBJS = $(AOBJS) $(COBJS) $(MAINOBJ)
+MAINSRC := $(wildcard *.c)
+MAINOBJ := $(MAINSRC:%.c=$(BUILD_DIR)/%$(OBJEXT))
+
+SRCS := $(ASRCS) $(CSRCS) $(MAINSRC)
+OBJS := $(AOBJS) $(COBJS) $(MAINOBJ)
 
 ## MAINOBJ -> OBJFILES
+.PHONY: all
+all: $(BUILD_DIR)/$(BIN)
 
-all: $(BIN)
-
-$(BIN): lvgl-git-check $(OBJS)
-	@$(CC) -o $(BIN) $(OBJS) $(LDFLAGS)
+$(BUILD_DIR)/$(BIN): lvgl-git-check $(OBJS)
+	@$(CC) -o $@ $(OBJS) $(LDFLAGS)
 	@echo "CC -o $@"
 
-%.o: %.c
+$(BUILD_DIR)/%.o: %.c | lvgl-git-check
+	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c $< -o $@
-	@echo "CC $<"
+	@echo "CC $(subst $(CURDIR)/,,$<)"
 
 clean:
-	rm -f $(BIN) $(OBJS)
+	rm -rf $(BUILD_DIR)
 
 lvgl-git-%:
 	@if ! [ -d lvgl ]; then \
@@ -81,3 +87,14 @@ lvgl-git-%:
 			(cd lv_drivers && git $(*F)); \
 		fi; \
 	fi
+
+.PHONY: info
+info:
+	@printf "BIN = $(BIN)\n"
+	@printf "CROSS_COMPILE = $(CROSS_COMPILE)\n"
+	@printf "CC = $(CC)\n"
+	@printf "CC = $(CC)\n"
+	@printf "CFLAGS  = $(CFLAGS)\n"
+	@printf "LDFLAGS = $(LDFLAGS)\n"
+	@printf "SRCS = $(SRCS)\n"
+	@printf "OBJS = $(OBJS)\n"
