@@ -7,6 +7,7 @@
  * License version 3.
  */
 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
@@ -119,7 +120,7 @@ int io_spi_read_word(uint16_t reg, uint8_t *rx, uint32_t len)
 	return io_spi_read_array(data, sizeof(data), rx, len);
 }
 
-int io_spi_write_array(uint8_t *tx, uint32_t len)
+int io_spi_write_array(const uint8_t *tx, uint32_t len)
 {
 	struct spi_ioc_transfer spi;
 
@@ -259,4 +260,14 @@ int io_reset(int state)
 	}
 
 	return 0;
+}
+
+void io_delay_us(uint32_t us)
+{
+	usleep(us);
+}
+
+void io_delay_ms(uint32_t ms)
+{
+	usleep(ms * 1000);
 }
