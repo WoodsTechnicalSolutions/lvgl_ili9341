@@ -21,17 +21,10 @@
 #include <pthread.h>
 
 #include "lvgl/lvgl.h"
-#include "lv_drivers/display/ILI9341.h"
-#include "lv_drivers/indev/evdev.h"
+#include "lvgl/src/drivers/evdev/lv_evdev.h"
 
 #include "io.h"
-
-#define DISP_BUF_SIZE (LV_HOR_RES_MAX * LV_VER_RES_MAX)
-
-static lv_color_t buf[DISP_BUF_SIZE];
-static lv_disp_draw_buf_t draw_buf;
-static lv_disp_drv_t disp_drv;
-static lv_indev_drv_t indev_drv;
+#include "ili9341.h"
 
 static lv_obj_t *background = NULL;
 static lv_obj_t *status = NULL;
@@ -57,12 +50,10 @@ static void btn_event_cb(lv_event_t *ev)
 	static uint8_t count = 0;
 	static char text[32] = { '\0' };
 
-	if (ev->code == LV_EVENT_CLICKED) {
-		snprintf(text, sizeof(text), "Button (%d)", ++count);
-		lv_label_set_text(button_label, text);
-		if (count == UINT8_MAX) {
-			count = 0;
-		}
+	snprintf(text, sizeof(text), "Button (%d)", ++count);
+	lv_label_set_text(button_label, text);
+	if (count == UINT8_MAX) {
+		count = 0;
 	}
 }
 
@@ -70,44 +61,42 @@ static void slider_event_cb(lv_event_t *ev)
 {
 	static char text[4] = { '\0' };
 
-	if (ev->code == LV_EVENT_VALUE_CHANGED) {
-		snprintf(text, sizeof(text), "%u", lv_slider_get_value(slider));
-		lv_label_set_text(slider_label, text);
-	}
+	snprintf(text, sizeof(text), "%u", lv_slider_get_value(slider));
+	lv_label_set_text(slider_label, text);
 }
 
 int main(int argc, char* argv[])
 {
 	uint8_t count = 0;
+	lv_indev_t *touch = NULL;
+	lv_display_t *disp = NULL;
+	uint32_t buf_sz;
+	uint8_t *buf[2] = { NULL };
 	time_t t = time(NULL);
 
 	// LVGL Setup
 	lv_init();
 
-	// LCD GPIO and SPI Setup
-	io_init(argc, argv);
-
 	// LCD Controller Setup
-	ili9341_init();
+	// - HiLetgo ILI9341 240x320 2.8" SPI TFT LCD Touch Panel
+	disp = lv_display_create(ILI9341_HORZ_RES, ILI9341_VERT_RES);
+	if (!disp)
+		return -1;
+	ili9341_init(argc, argv, ILI9341_HORZ_RES, ILI9341_VERT_RES);
 	ili9341_rotate(90, ILI9341_BGR);
+	lv_display_set_flush_cb(disp, ili9341_flush);
+	lv_display_set_resolution(disp, ILI9341_HORZ_RES, ILI9341_VERT_RES);
+	lv_display_set_physical_resolution(disp, ILI9341_HORZ_RES, ILI9341_VERT_RES);
+	lv_display_set_offset(disp, 0, 0);
+	buf_sz = ILI9341_HORZ_RES;
+	buf_sz *= lv_color_format_get_size(lv_display_get_color_format(disp));
+	buf[0] = lv_malloc(buf_sz);
+	buf[1] = lv_malloc(buf_sz);
+	lv_display_set_buffers(disp, buf[0], buf[1], buf_sz, LV_DISPLAY_RENDER_MODE_PARTIAL);
 
 	// Touchscreen
-	if (!evdev_set_file(EVDEV_NAME)) {
-		io_uninit();
-		return -1;
-	}
-
-	// LVGL Display Setup (Physical LCD)
-	lv_disp_draw_buf_init(&draw_buf, buf, NULL, DISP_BUF_SIZE);
-	lv_disp_drv_init(&disp_drv);
-	disp_drv.draw_buf = &draw_buf;
-	disp_drv.flush_cb = ili9341_flush;
-	lv_disp_drv_register(&disp_drv);
-
-	lv_indev_drv_init(&indev_drv);
-	indev_drv.type = LV_INDEV_TYPE_POINTER;
-	indev_drv.read_cb = evdev_read;
-	lv_indev_drv_register(&indev_drv);
+	touch = lv_evdev_create(LV_INDEV_TYPE_POINTER, "/dev/input/event1");
+	lv_indev_set_display(touch, disp);
 
 	// Set background text on the screen
 	background = lv_label_create(lv_scr_act());
@@ -147,14 +136,14 @@ int main(int argc, char* argv[])
 	io_led(1);
 
 	while(1) {
-		if (++count == 10) {
+		if (++count == 200) {
 			count = 0;
 			t = time(NULL);
 			lv_obj_clean(status);
 			lv_label_set_text(status, asctime(localtime(&t)));
 		}
 		lv_task_handler();
-		usleep(100000);
+		usleep(5000);
 	}
 
 	return 0;
