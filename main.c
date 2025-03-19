@@ -147,14 +147,14 @@ int main(int argc, char* argv[])
 	io_led(1);
 
 	while(1) {
-		if (++count == 10) {
+		if (++count == 200) {
 			count = 0;
 			t = time(NULL);
 			lv_obj_clean(status);
 			lv_label_set_text(status, asctime(localtime(&t)));
 		}
 		lv_task_handler();
-		usleep(100000);
+		usleep(5000);
 	}
 
 	return 0;
