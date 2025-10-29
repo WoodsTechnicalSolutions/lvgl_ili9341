@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+# LVGL preparation
+if ! [ -d lvgl ]; then
+	git clone https://github.com/lvgl/lvgl
+	if ! [ -d lvgl ]; then
+		printf "***** LVGL GIT CLONE FAILED *****\n"
+		exit 1
+	fi
+	(cd lvgl && git checkout ${LVGL_GIT_REF})
+else
+	if [ "check" = "${1}" ]; then
+		exit 0
+	fi
+	(cd lvgl && git restore . && git ${1})
+fi
+if ! [ "check" = "${1}" ]; then
+	sed -i s,\<drm_,\<drm\/drm_, lvgl/src/drivers/display/drm/lv_linux_drm.c 
+fi
+
+# other preparation here
+
+exit 0

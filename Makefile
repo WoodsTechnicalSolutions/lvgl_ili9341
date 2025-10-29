@@ -11,15 +11,17 @@
 
 TOP_DIR := $(shell pwd)
 
-LVGL_GIT_REF := release/v9.2
+export LVGL_GIT_REF := release/v9.4
+
+READY := $(shell $(TOP_DIR)/scripts/git check)
 
 CC := $(CROSS_COMPILE)gcc
 CFLAGS += -Wall -Wshadow -Wundef -Wmaybe-uninitialized -O3 -g0 \
 	  -I$(TOP_DIR) \
 	  $(CFLAGS_USER)
-LDFLAGS ?= -z noexecstack -lrt -lpthread -lgpiod $(LDFLAGS_USER)
+LDFLAGS ?= -z noexecstack -lrt -lpthread -lgpiod -ldrm $(LDFLAGS_USER)
 
--include $(TOP_DIR)/lvgl/lvgl.mk
+-include lvgl.mk
 
 BIN = ili9341
 
@@ -45,36 +47,33 @@ OBJS := $(AOBJS) $(COBJS) $(MAINOBJ)
 .PHONY: all
 all: $(BUILD_DIR)/$(BIN)
 
-$(BUILD_DIR)/$(BIN): lvgl-git-check $(OBJS)
+$(BUILD_DIR)/$(BIN): git-check $(OBJS)
 	@$(CC) -o $@ $(OBJS) $(LDFLAGS)
 	@echo "CC -o $@"
 
-$(BUILD_DIR)/%.o: %.c | lvgl-git-check
+$(BUILD_DIR)/%.o: %.c | git-check
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "CC $(subst $(CURDIR)/,,$<)"
 
-$(BUILD_DIR)/%.o: %.S | lvgl-git-check
+$(BUILD_DIR)/%.o: %.S | git-check
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "CC $(subst $(CURDIR)/,,$<)"
 
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -f .git-ready
 
-lvgl-git-%:
-	@if ! [ -d lvgl ]; then \
-		git clone https://github.com/lvgl/lvgl; \
-		if ! [ -d lvgl ]; then \
-			printf "***** LVGL GIT CLONE FAILED *****\n"; \
-			exit 2; \
-		fi; \
-		(cd lvgl && git checkout $(LVGL_GIT_REF)); \
-	else \
-		if ! [ "check" = "$(*F)" ]; then \
-			(cd lvgl && git $(*F) && ech -n || echo -n); \
-		fi; \
-	fi
+.PHONY: git
+git: .git-ready
+
+.git-ready:
+	@$(TOP_DIR)/scripts/git check
+	@touch $@
+
+git-%:
+	@$(TOP_DIR)/scripts/git $(*F)
 
 .PHONY: info
 info:
