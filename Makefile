@@ -17,7 +17,7 @@ READY := $(shell $(TOP_DIR)/scripts/git check)
 
 CC := $(CROSS_COMPILE)gcc
 CFLAGS += -Wall -Wshadow -Wundef -Wmaybe-uninitialized -O3 -g0 \
-	  -I$(TOP_DIR) \
+	  -I$(TOP_DIR) -I$(STAGING_DIR)/usr/include/drm \
 	  $(CFLAGS_USER)
 LDFLAGS ?= -z noexecstack -lrt -lpthread -lgpiod -ldrm $(LDFLAGS_USER)
 
