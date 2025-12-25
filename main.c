@@ -6,6 +6,7 @@
  * https://github.com/lvgl/lv_drivers
  * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/spi/spidev_test.c
  * https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git
+ * https://github.com/lvgl/lvgl/blob/release/v9.4/docs/src/details/integration/embedded_linux/drivers/drm.rst
  *
  * Copyright (C) 2020-2025, Derald D. Woods <woods.technical@gmail.com>
  *
@@ -18,7 +19,6 @@
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
-#include <pthread.h>
 
 #include "lvgl/lvgl.h"
 #include "lvgl/src/drivers/evdev/lv_evdev.h"
@@ -29,18 +29,6 @@ static lv_obj_t *button = NULL;
 static lv_obj_t *button_label = NULL;
 static lv_obj_t *slider = NULL;
 static lv_obj_t *slider_label = NULL;
-
-static pthread_t tick_thread;
-
-void *tick_timer(void *arg)
- {
-	while (true) {
-		usleep(10000);
-		lv_tick_inc(10);
-	}
-
-	pthread_exit(NULL);
- }
 
 static void btn_event_cb(lv_event_t *ev)
 {
@@ -112,20 +100,15 @@ int main(int argc, char* argv[])
 	lv_label_set_text(status, asctime(localtime(&t)));
 	lv_obj_align(status, LV_ALIGN_CENTER, 0, 100);
 
-	if (pthread_create(&tick_thread, NULL, tick_timer, NULL) == -1) {
-		fprintf(stderr, "error pthread_create - tick_timer\n");
-		return -1;
-	}
-
-	while(1) {
-		if (++count == 200) {
-			count = 0;
+	while (1) {
+		if (++count == 10) {
 			t = time(NULL);
 			lv_obj_clean(status);
 			lv_label_set_text(status, asctime(localtime(&t)));
+			count = 0;
 		}
-		lv_task_handler();
-		usleep(5000);
+		lv_timer_handler();
+		lv_delay_ms(100);
 	}
 
 	return 0;
