@@ -7,6 +7,7 @@
  * https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/tools/spi/spidev_test.c
  * https://git.kernel.org/pub/scm/libs/libgpiod/libgpiod.git
  * https://github.com/lvgl/lvgl/blob/release/v9.4/docs/src/details/integration/embedded_linux/drivers/drm.rst
+ * https://github.com/lvgl/lvgl/blob/release/v9.4/docs/src/details/integration/embedded_linux/drivers/evdev.rst
  *
  * Copyright (C) 2020-2025, Derald D. Woods <woods.technical@gmail.com>
  *
@@ -21,7 +22,7 @@
 #include <sys/time.h>
 
 #include "lvgl/lvgl.h"
-#include "lvgl/src/drivers/evdev/lv_evdev.h"
+#include "lvgl/src/core/lv_global.h"
 
 static lv_obj_t *background = NULL;
 static lv_obj_t *status = NULL;
@@ -46,8 +47,9 @@ static void slider_event_cb(lv_event_t *ev)
 {
 	static char text[4] = { '\0' };
 
-	snprintf(text, sizeof(text), "%u", lv_slider_get_value(slider));
+	lv_snprintf(text, sizeof(text), "%u", lv_slider_get_value(slider));
 	lv_label_set_text(slider_label, text);
+	lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 }
 
 int main(int argc, char* argv[])
@@ -72,11 +74,11 @@ int main(int argc, char* argv[])
 	lv_indev_set_display(touch, disp);
 
 	// Set background text on the screen
-	background = lv_label_create(lv_scr_act());
+	background = lv_label_create(lv_screen_active());
 	lv_label_set_text(background, "Light and Versatile Graphics Library");
 	lv_obj_align(background, LV_ALIGN_CENTER, 0, 75);
 
-	button = lv_btn_create(lv_scr_act());
+	button = lv_btn_create(lv_screen_active());
 	lv_obj_set_size(button, 100, 50);
 	lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 0);
 	lv_obj_add_event_cb(button, btn_event_cb, LV_EVENT_CLICKED, NULL);
@@ -85,18 +87,18 @@ int main(int argc, char* argv[])
 	lv_label_set_text(button_label, "Button");
 	lv_obj_align(button_label, LV_ALIGN_CENTER, 0, 0);
 
-	slider = lv_slider_create(lv_scr_act());
-	lv_obj_set_pos(slider, 0, 100);
+	slider = lv_slider_create(lv_screen_active());
+	lv_obj_center(slider);
 	lv_obj_set_size(slider, 200, 50);
 	lv_obj_add_event_cb(slider, slider_event_cb, LV_EVENT_VALUE_CHANGED, NULL);
 	lv_obj_align(slider, LV_ALIGN_CENTER, 0, 0);
 
-	slider_label = lv_label_create(lv_scr_act());
+	slider_label = lv_label_create(lv_screen_active());
 	lv_label_set_text(slider_label, "0");
 	lv_obj_align_to(slider_label, slider, LV_ALIGN_OUT_BOTTOM_MID, 0, 0);
 
 	// Set status (time) text on the screen
-	status = lv_label_create(lv_scr_act());
+	status = lv_label_create(lv_screen_active());
 	lv_label_set_text(status, asctime(localtime(&t)));
 	lv_obj_align(status, LV_ALIGN_CENTER, 0, 100);
 
