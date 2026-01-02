@@ -9,7 +9,7 @@
  * https://github.com/lvgl/lvgl/blob/release/v9.4/docs/src/details/integration/embedded_linux/drivers/drm.rst
  * https://github.com/lvgl/lvgl/blob/release/v9.4/docs/src/details/integration/embedded_linux/drivers/evdev.rst
  *
- * Copyright (C) 2020-2025, Derald D. Woods <woods.technical@gmail.com>
+ * Copyright (C) 2020-2026, Derald D. Woods <woods.technical@gmail.com>
  *
  * This file is made available under the terms of the GNU General Public
  * License version 3.
