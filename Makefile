@@ -11,7 +11,7 @@
 
 TOP_DIR := $(shell pwd)
 
-export LVGL_GIT_REF := release/v9.4
+export LVGL_GIT_REF := release/v9.5
 
 READY := $(shell $(TOP_DIR)/scripts/git check)
 
